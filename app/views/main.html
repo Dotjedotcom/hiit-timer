@@ -1,0 +1,105 @@
+<div class="row first">
+
+    <div class="col-xs-12">
+        <div class="row settings">
+            <div class="col-xs-4">
+                Schema: <span ng-bind-html="main.currentRoutine.name"></span>
+                <a ng-click="main.edit();"><span class="glyphicon glyphicon-cog"></span></a>
+            </div>
+            <div class="col-xs-4">
+                Warm Up: <span ng-bind-html="main.currentRoutine.warmup"></span>
+            </div>
+            <div class="col-xs-4">
+                Cool Down: <span ng-bind-html="main.currentRoutine.cooldown"></span>
+            </div>
+        </div>
+        <div class="row hidden">
+            <form novalidate method="post" class="col-xs-12" role="form">
+                <div class="form-group row">
+                    <legend>Routine Settings</legend>
+                </div>
+                <div class="form-group row">
+                    <label for="routine-name" class="col-sm-2 control-label">Name</label>
+
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="routine-name" placeholder="routine name">
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <label for="routine-warmup" class="col-sm-2 control-label">Warm Up</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="routine-warmup" placeholder="00:00:00">
+                    </div>
+                <!--</div>-->
+                <!--<div class="form-group row">-->
+                    <label for="routine-cooldown" class="col-sm-2 control-label">Cool Down</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="routine-cooldown" placeholder="00:00:00">
+                    </div>
+
+                    <label for="routine-complex" class="col-sm-2 control-label">Simple</label>
+                    <div class="col-sm-2">
+                        <input type="checkbox" value="complex" id="routine-complex" ng-checked="true">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="routine-high" class="col-sm-2 control-label">High Interval</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="routine-high" placeholder="00:00:00">
+                    </div>
+                <!--</div>-->
+                <!--<div class="form-group row">-->
+                    <label for="routine-low" class="col-sm-2 control-label">Low Interval</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="routine-low" placeholder="00:00:00">
+                    </div>
+                    <label for="routine-repeat" class="col-sm-2 control-label">Repeat</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="routine-repeat" placeholder="0">
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="col-sm-10 col-sm-offset-2">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+        <div class="row main-timer">
+            <div class="col-xs-4 col-xs-offset-4">
+                <div class="text-center">
+                    <h1>
+                        <timer id="timert" autostart="false" countdown="main.stateTime" interval="1000" finish-callback="main.callbackTimer.finished()">{{hhours}}:{{mminutes}}:{{sseconds}}</timer>
+                        <!--<timer autostart="true" countdown="main.stateTime" interval="1000" finish-callback="main.callbackTimer.finished()">{{hhours}}:{{mminutes}}:{{sseconds}}</timer>-->
+                        <!--<timer autostart="true" countdown="main.stateTime" interval="1000" finish-callback="main.callbackTimer.finished()">{{hhours}}:{{mminutes}}:{{sseconds}}</timer>-->
+
+
+                    </h1>
+                    <p>{{main.statusMsg}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="row timers">
+            <div class="col-xs-4">
+                Verlopen: <timer autostart="false">{{hhours}}:{{mminutes}}:{{sseconds}}</timer>
+            </div>
+            <div class="col-xs-4">
+                <div class="text-center">
+                    <a href="#/" class="btn btn-primary" ng-click="main.startTimer()" ng-show="!main.timerRunning">Start</a>
+                    <a href="#/" class="btn btn-primary" ng-click="main.stopTimer()" ng-show="main.timerRunning">Stop</a>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                Resterend:
+                <timer id="total-time" autostart="false" countdown="main.totalTime" interval="1000">
+                    {{hhours}}:{{mminutes}}:{{sseconds}}
+                </timer>
+            </div>
+        </div>
+    </div>
+</div>
