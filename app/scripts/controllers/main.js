@@ -14,94 +14,127 @@
         .controller('MainCtrl', Main);
 
     function Main($scope, RoutineService) {
-        var vm = this;
 
-        vm.timerRunning = false;
-        var _current = RoutineService.getSelected(),
+        var vm = this,
+            _current,
+            _routines,
+            _rounds,
+            _active;
+
+        vm.startTimer = startTimer;
+        vm.stopTimer = stopTimer;
+        vm.toggleTimer = toggleTimer;
+        vm.reset = reset;
+        vm.addSeconds = addSeconds;
+
+        init();
+
+        /**
+         * init
+         * @description
+         *  initializes application, hook for reset
+         */
+        function init() {
+
+            _current = RoutineService.getSelected();
             _routines = RoutineService.getData();
+            _rounds = RoutineService.createRounds();
+            _active = 0;
 
-        vm.currentRoutine = _routines[_current];
-        // Totaltime view and timer
-        vm.totalTime = RoutineService.calculateTotalTime();
-        vm.warmupTime = RoutineService.strToTime(vm.currentRoutine.warmup);
-        vm.lowTime = RoutineService.strToTime(vm.currentRoutine.interval[0].low);
-        vm.highTime = RoutineService.strToTime(vm.currentRoutine.interval[0].high);
-        vm.cooldownTime = RoutineService.strToTime(vm.currentRoutine.cooldown);
+            vm.txt = 'Start';
+            vm.timerRunning = false;
+            vm.currentRoutine = _routines[_current];
+            vm.totalTime = _rounds.total;
+            vm.warmupTime = RoutineService.strToTime(vm.currentRoutine.warmup);
+            vm.cooldownTime = RoutineService.strToTime(vm.currentRoutine.cooldown);
+            vm.stateTime = _rounds.time[_active];
+            vm.statusMsg = _rounds.name[_active];
 
-        vm.states = ['warmup', 'interval', 'cooldown'];
-        vm.rounds = vm.currentRoutine.interval[0].rounds;
-        vm.activeState = 0;
-        vm.activeRound = 0;
-        // Start interval high (true), low (false)
-        vm.activeInterval = false;
-        vm.statusMsg = vm.states[vm.activeState];
-
-        vm.stateTime = vm[vm.states[vm.activeState] + 'Time'];
-        vm.callbackTimer = {
-            status: vm.states[vm.activeState]
-        };
-        //vm.callbackTimer.;
-
-        log();
-
-        vm.callbackTimer.finished = function() {
-            console.log('vm.activeState', vm.activeState);
-            if (vm.activeState === 0) {
-                vm.activeState++;
-            }
-            vm.callbackTimer.status = vm.states[vm.activeState];
-            vm.statusMsg = vm.states[vm.activeState] + (vm.activeState === 1 ? ((vm.activeInterval ? ' high' : ' low') + ' ' + vm.activeRound) : '');
-            console.log('vm.activeState', vm.activeState);
-
-            if (vm.states[vm.activeState] === 'interval' && vm.activeRound < vm.rounds) {
-                console.log('INTERVAL');
-                vm.stateTime = vm.activeInterval ? vm['lowTime'] : vm['highTime'];
-                angular.element('#timert')[0].addCDSeconds(vm.activeInterval ? vm['lowTime'] : vm['highTime']);
-
-                vm.activeInterval = !vm.activeInterval;
-                if (vm.activeInterval === false) {
-                    vm.activeRound++;
-                }
-            } else {
-                console.log('WARM/COOL');
-                vm.stateTime = vm[vm.states[vm.activeState] + 'Time'];
-                angular.element('#timert')[0].addCDSeconds(vm[vm.states[vm.activeState] + 'Time']);
-
-                vm.activeState++;
-            }
-
-            $scope.$apply();
-            //setTimeout(function(){
-            //vm.startTimer();
-            //}, 100);
-            //vm.startTimer();
             log();
 
-        };
+            /**
+             * callbackTimer
+             * @returns {boolean}
+             * @description
+             *  used for handling sets, cycles and rounds
+             */
+            vm.callbackTimer = function() {
 
+                _active++;
 
-        vm.startTimer = function() {
+                // complete
+                if (_active === _rounds.time.length) {
+
+                    vm.statusMsg = 'Complete';
+                    vm.stateTime = 0;
+                    vm.stopTimer();
+
+                    $scope.$apply();
+
+                    return false;
+                }
+                else {
+                    vm.statusMsg = _rounds.name[_active];
+                }
+
+                // push new round seconds to timer
+                angular.element('#timert')[0].addCDSeconds(_rounds.time[_active]);
+
+                $scope.$apply();
+
+                log();
+            };
+        }
+
+        function startTimer() {
+
             $scope.$broadcast('timer-start');
             vm.timerRunning = true;
         };
-        vm.stopTimer = function() {
+
+        function stopTimer() {
+
             $scope.$broadcast('timer-stop');
             vm.timerRunning = false;
         };
 
-        vm.addSeconds = function(seconds) {
+        function toggleTimer() {
+
+            var bc = vm.timerRunning ? 'timer-stop' : 'timer-start';
+
+            vm.txt = vm.timerRunning ? 'Start' : 'Pause';
+            vm.timerRunning = !vm.timerRunning;
+
+            $scope.$broadcast(bc);
+        };
+
+        function reset() {
+
+            console.clear();
+
+            _active = 0;
+
+            vm.stateTime = 0;
+            vm.stopTimer();
+
+            init();
+        }
+
+        function addSeconds(seconds) {
+
             $scope.$broadcast('timer-add-cd-seconds', seconds);
         };
 
         function log() {
-            console.group('----- round ' + vm.states[vm.activeState] + (vm.states[vm.activeState] === 'interval' ? (vm.activeInterval ? ' low' : ' high' ) : '') + ' ----');
-            console.log('asdasd', vm.states[vm.activeState] === 'interval' && vm.activeRound < vm.rounds);
-            //console.log('strToTime', RoutineService.strToTime('01:01:15'));
-            //console.log('totalTime:', vm.totalTime);
-            //console.log('warmupTime:', vm.warmupTime);
-            console.log('activeInterval', vm.activeInterval);
-            console.log('stateTime:', vm.stateTime, 'activeState:', vm.states[vm.activeState], vm.activeState);
-            console.log('rounds:', vm.rounds, 'active:', vm.activeRound);
+
+            console.group('----- round ' + _rounds.name[_active] + ' ----');
+            console.log('createRounds', _rounds);
+            console.log('totalTime:', vm.totalTime);
+            console.log('warmupTime:', vm.warmupTime);
+            console.log('cooldownTime:', vm.cooldownTime);
+            console.log('activeInterval', _active);
+            console.log('stateTime:', _rounds.time[_active]);
+            //console.log('rounds:', vm.rounds, 'active:', vm.activeRound);
             console.groupEnd();
         }
 
